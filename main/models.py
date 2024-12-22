@@ -96,6 +96,8 @@ class HomeWork(Auto_timeCreated):
 
 class Diary(Auto_timeCreated):
     """Kundalikni baholash"""
+    WORK_TYPE = (('imtihon', "Exam"), ('uy vazifa', "Home work"))
+    task_type = models.CharField(max_length=100, choices=WORK_TYPE)
     student_diary = models.ForeignKey(Student_Diary, on_delete=models.CASCADE, related_name="diary")
     home_work = models.ForeignKey(HomeWork, on_delete=models.PROTECT)
     ball = models.PositiveIntegerField(default=0, null=True, blank=True, help_text="0-dan 100-gacha")

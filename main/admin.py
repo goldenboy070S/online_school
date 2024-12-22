@@ -36,7 +36,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 @admin.register(Diary)
 class DiaryAdmin(admin.ModelAdmin):
-    list_display = ['home_work', 'description', 'ball', 'student_diary']
+    list_display = ['task_type', 'home_work', 'description', 'ball', 'student_diary']
     list_filter = ['student_diary']
 
 
