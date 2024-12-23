@@ -1,8 +1,19 @@
 from django.contrib import admin
-from .models import Weekday, Attendance, HomeWork, Student, Teacher, Science, Room, Diary, Course, Lesson_list, Student_Diary
+from .models import Weekday, Attendance, HomeWork, User, Science, Room, Diary, Course, Lesson_list, Student_Diary, Message, Student_HomeWork
+from django.contrib.auth.admin import UserAdmin
 # Register your models here.
 admin.site.register(Weekday)
-admin.site.register(Student_Diary)
+admin.site.register(Message)
+
+
+class StudentDiaryAdmin(admin.ModelAdmin):
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "student":
+            kwargs["queryset"] = User.objects.filter(type_user="S")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+admin.site.register(Student_Diary, StudentDiaryAdmin)
+
 
 @admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
@@ -10,47 +21,90 @@ class RoomAdmin(admin.ModelAdmin):
     list_filter = ['science']
 
 
-@admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'age', 'mother_name', 'father_name', 'gender', 'course']
-    search_fields = ['first_name', 'last_name', 'mother_name', 'father_name']
-    list_filter = ['gender', 'age', 'course']
+class CustomUserAdmin(UserAdmin):
+    model = User
+    list_display = ['username', 'first_name', 'last_name', 'email', 'type_user', 'age'] 
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email', 'age', 'type_user')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'age', 'course'),
+        }),
+    )
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+    ordering = ('username',)
+
+admin.site.register(User, CustomUserAdmin)
 
 
-@admin.register(Science)
 class ScienceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'teacher']
-    list_filter = ['teacher']
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "teacher":
+            kwargs["queryset"] = User.objects.filter(type_user="T")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+admin.site.register(Science, ScienceAdmin)
 
 
-@admin.register(Teacher)
-class TeacherAdmin(admin.ModelAdmin):
-    list_display = ["first_name", 'last_name', 'age']
-
-
-@admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ['day', 'student', 'status']
-    list_filter = ['day', 'status']
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "student":
+            kwargs["queryset"] = User.objects.filter(type_user="S")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+admin.site.register(Attendance, AttendanceAdmin)
 
 
-@admin.register(Diary)
 class DiaryAdmin(admin.ModelAdmin):
-    list_display = ['task_type', 'home_work', 'description', 'ball', 'student_diary']
-    list_filter = ['student_diary']
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "student_diary":
+            kwargs["queryset"] = Student_Diary.objects.filter(student__type_user="S")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+admin.site.register(Diary, DiaryAdmin)
 
 
-@admin.register(HomeWork)
 class HomeWorkAdmin(admin.ModelAdmin):
-    list_display = ['title', 'deadline', 'teacher']
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "teacher":
+            kwargs["queryset"] = User.objects.filter(type_user="T")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+admin.site.register(HomeWork, HomeWorkAdmin)
 
 
-@admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ['name', 'teacher']
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "teacher":
+            kwargs["queryset"] = User.objects.filter(type_user="T")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "students":
+            kwargs["queryset"] = User.objects.filter(type_user="S")
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+admin.site.register(Course, CourseAdmin)
 
 
-@admin.register(Lesson_list)
-class Lesson_listAdmin(admin.ModelAdmin):
-    list_display = ['day', 'course']
-    list_filter = ['day', 'course']
+class LessonListAdmin(admin.ModelAdmin):
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "teacher":
+            kwargs["queryset"] = User.objects.filter(type_user="T")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+admin.site.register(Lesson_list, LessonListAdmin)
+
+
+class StudentHomeWorkAdmin(admin.ModelAdmin):
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "student":
+            kwargs["queryset"] = User.objects.filter(type_user="S")  
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+admin.site.register(Student_HomeWork, StudentHomeWorkAdmin)
